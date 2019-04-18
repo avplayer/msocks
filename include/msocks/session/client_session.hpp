@@ -24,10 +24,10 @@ struct client_session_attribute
 class client_session final : public basic_session, public std::enable_shared_from_this<client_session>
 {
 public:
-	client_session(io_context& ioc, ip::tcp::socket local, const client_session_attribute& attribute) 
+	client_session(io_context& ioc, ip::tcp::socket && local, const client_session_attribute& attribute) 
         : basic_session(ioc)
-        , local_(ioc)
-        , remote_(std::move(local), shadowsocks::context{attribute.method, attribute.key})
+        , local_(std::move(local))
+        , remote_(ip::tcp::socket{ioc}, shadowsocks::context{attribute.method, attribute.key})
         , attribute_(attribute)
 	{}
 

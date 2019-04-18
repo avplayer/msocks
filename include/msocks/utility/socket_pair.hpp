@@ -44,14 +44,7 @@ socket_pair(
 				break;
 			}
 			
-			if constexpr(std::is_same<shadowsocks::stream<ip::tcp::socket>, SinkStream>::value)
-            {
-                sink.async_write(buffer(m_buf, n_read), yield[ec]);
-            }
-            else
-            {
-                async_write(sink, buffer(m_buf, n_read), yield[ec]);
-            }
+			async_write(sink, buffer(m_buf, n_read), yield[ec]);
             
 			if (ec)
 			{

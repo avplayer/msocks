@@ -18,9 +18,11 @@ void client_session::start(yield_context yield)
 	try
 	{
 		auto target_address = utility::async_local_socks5(ioc_, local_, yield);
+
 		ip::tcp::endpoint ep(ip::make_address(attribute_.remote_address), attribute_.remote_port);
+        remote_.next_layer().open(ep.protocol());
 		remote_.next_layer().async_connect(ep, yield);
-        remote_.async_write(boost::asio::buffer(target_address), yield);
+        async_write(remote_, buffer(target_address), yield);
 		spawn(
 			ioc_,
 			[this, p = shared_from_this()](yield_context yield)

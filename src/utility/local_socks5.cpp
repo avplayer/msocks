@@ -84,7 +84,6 @@ void detail::do_local_socks5(
 		result.push_back(request.addr_type);
 		if (request.addr_type == socks::addr_ipv4)
 		{
-
 			async_read(local, buffer(temp, 32 / 8 + 2), yield);
 			std::copy(temp.begin(), temp.begin() + 32 / 8 + 2, std::back_inserter(result));
 		}
