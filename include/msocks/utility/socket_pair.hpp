@@ -4,21 +4,20 @@
 #include <boost/asio/buffer.hpp>
 #include <boost/asio/spawn.hpp>
 #include <boost/asio/streambuf.hpp>
+#include <shadowsocks/stream.h>
 
 using namespace boost::asio;
 using namespace boost::system;
 
 namespace msocks::utility
 {
-template <typename CompletionToken>
+template <typename SourceStream, typename SinkStream, typename CompletionToken>
 async_result<yield_context, void(error_code)>::return_type
 socket_pair(
-	ip::tcp::socket& source,
-	ip::tcp::socket& destination,
+	SourceStream & source,
+	SinkStream & sink,
 	io_context& ioc,
 	mutable_buffer m_buf,
-	std::function<void(std::size_t, yield_context)> before_read,
-	std::function<void(mutable_buffer)> before_write,
 	CompletionToken&& token
 )
 {
@@ -30,11 +29,9 @@ socket_pair(
 		ioc,
 		[
 			&source,
-			&destination,
+			&sink,
 			&ioc,
 			m_buf,
-			before_read(std::move(before_read)),
-			before_write(std::move(before_write)),
 			handler
 		](yield_context yield) mutable
 	{
@@ -46,9 +43,16 @@ socket_pair(
 			{
 				break;
 			}
-			before_read(n_read, yield);
-			before_write(buffer(m_buf, n_read));
-			async_write(destination, buffer(m_buf, n_read), yield[ec]);
+			
+			if constexpr(std::is_same<shadowsocks::stream<ip::tcp::socket>, SinkStream>::value)
+            {
+                sink.async_write(buffer(m_buf, n_read), yield[ec]);
+            }
+            else
+            {
+                async_write(sink, buffer(m_buf, n_read), yield[ec]);
+            }
+            
 			if (ec)
 			{
 				break;

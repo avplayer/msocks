@@ -30,7 +30,10 @@ class server_session final :
 public:
 
 	server_session(io_context& ioc, ip::tcp::socket local, const server_session_attribute& attribute) :
-		basic_session(ioc, std::move(local)), attribute_(attribute)
+		basic_session(ioc)
+        , local_(std::move(local), shadowsocks::context{attribute.method, attribute.key})
+        , remote_(ioc)
+        , attribute_(attribute)
 	{}
 
 	void go();
@@ -49,6 +52,10 @@ private:
 
 	void do_async_handshake(async_result<yield_context, void(error_code, std::pair<std::string, std::string>)>::completion_handler_type handler, yield_context yield);
 
+    shadowsocks::stream<ip::tcp::socket> local_;
+    
+    ip::tcp::socket remote_;
+    
 	const server_session_attribute& attribute_;
 };
 
