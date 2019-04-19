@@ -11,11 +11,15 @@ enum errc_t
 	version_not_supported = 1,
 	auth_not_found = 2,
 	cmd_not_supported = 3,
-	address_not_supported = 4
+	address_not_supported = 4,
+    cipher_algo_not_found,
+    cipher_keylength_invalid,
+    cipher_ivlength_invalid,
+    socks_error_size,
 };
 
 inline
-std::string make_errc_string(errc_t code)
+const char * make_errc_string(errc_t code)
 {
 	switch (code)
 	{
@@ -29,6 +33,12 @@ std::string make_errc_string(errc_t code)
 			return "connect command not supported";
 		case address_not_supported:
 			return "address type not supported";
+        case cipher_algo_not_found:
+            return "cipher algo not found";
+        case cipher_keylength_invalid:
+            return "cipher keylength invalid";
+        case cipher_ivlength_invalid:
+            return "cipher ivleng invalid";
 		default:
 			return "unknown";
 	}
@@ -37,26 +47,12 @@ std::string make_errc_string(errc_t code)
 inline const char*
 make_errc_string(errc_t code, char* buffer, std::size_t len) noexcept
 {
-	switch (code)
-	{
-		case success:
-			return strncpy(buffer, "success", len);
-		case version_not_supported:
-			return strncpy(buffer, "unsupported socks version", len);
-		case auth_not_found:
-			return strncpy(buffer, "anonymous auth method not found", len);
-		case cmd_not_supported:
-			return strncpy(buffer, "connect command not supported", len);
-		case address_not_supported:
-			return strncpy(buffer, "address type not supported", len);
-		default:
-			return strncpy(buffer, "unknown", len);
-	}
+    return strncpy(buffer, make_errc_string(code), len);
 }
 inline
 bool code_in_range(int code)
 {
-	return 0 <= code && code < 5;
+	return 0 <= code && code < socks_error_size;
 }
 
 

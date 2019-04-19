@@ -8,6 +8,8 @@
 #include <boost/asio/ip/tcp.hpp>
 #include <botan/stream_cipher.h>
 
+#include <shadowsocks/stream.h>
+
 using namespace boost::asio;
 using namespace boost::system;
 namespace msocks
@@ -20,24 +22,13 @@ public:
 	const std::string& uuid() const noexcept;
 
 protected:
-	basic_session(io_context& ioc, ip::tcp::socket local);
-
-	static void cipher_setup(
-		std::unique_ptr<Botan::StreamCipher> & cipher,
-		const std::string& method,
-		const std::vector<uint8_t>& key,
-		const std::vector<uint8_t>& iv
-	);
+	basic_session(io_context& ioc);
 
 	io_context& ioc_;
 	std::string uuid_;
-	ip::tcp::socket local_;
 	std::array<uint8_t,4096> buffer_local_;
-	ip::tcp::socket remote_;
 	std::array<uint8_t,4096> buffer_remote_;
 
-	std::unique_ptr<Botan::StreamCipher> local_remote_cipher_;
-	std::unique_ptr<Botan::StreamCipher> remote_local_cipher_;
 
 };
 

@@ -30,7 +30,7 @@ void server_session::start(yield_context yield)
 			timer.async_wait(yield[ec]);
 			if (ec != error::operation_aborted)
 			{
-				local_.cancel(ec);
+				local_.next_layer().cancel(ec);
 				resolver.cancel();
 				remote_.cancel(ec);
 			}
@@ -70,15 +70,11 @@ void server_session::fwd_local_remote(yield_context yield)
 			local_, remote_,
 			ioc_,
 			buffer(buffer_local_),
-			[this](std::size_t n, yield_context yield)
-			{
-				attribute_.limiter->async_get(n, yield);
-			},
-			[this](mutable_buffer m_buf)
-			{
-				local_remote_cipher_->cipher1((uint8_t*)m_buf.data(), m_buf.size());
-				printf("\n");
-			}, yield[ec]);
+            [this](std::size_t n, yield_context yield)
+            {
+                attribute_.limiter->async_get(n, yield);
+            },
+			yield[ec]);
 	}
 	catch (system_error & ignored)
 	{
@@ -90,25 +86,16 @@ void server_session::fwd_remote_local(yield_context yield)
 {
 	try
 	{
-		std::vector<uint8_t> iv(8);
-		Botan::AutoSeeded_RNG rng;
-		rng.randomize(iv.data(), iv.size());
-		cipher_setup(remote_local_cipher_, attribute_.method, attribute_.key, iv);
-		async_write(local_, buffer(iv), yield);
-
 		error_code ec;
 		utility::socket_pair(
 			remote_, local_,
 			ioc_,
 			buffer(buffer_remote_),
-			[this](std::size_t n, yield_context yield)
-			{
-				attribute_.limiter->async_get(n, yield);
-			},
-			[this](mutable_buffer m_buf)
-			{
-				remote_local_cipher_->cipher1((uint8_t*)m_buf.data(), m_buf.size());
-			}, yield[ec]);
+            [this](std::size_t n, yield_context yield)
+            {
+                attribute_.limiter->async_get(n, yield);
+            },
+            yield[ec]);
 	}
 	catch (system_error & ignored)
 	{
@@ -121,15 +108,10 @@ void server_session::do_async_handshake(
 {
 	error_code ec;
 	std::pair<std::string, std::string> result;
-	std::vector<uint8_t> iv(8);
 	try
 	{
-
-		async_read(local_, buffer(iv), yield);
-		cipher_setup(local_remote_cipher_, attribute_.method, attribute_.key, iv);
 		uint8_t address_type = 0;
 		async_read(local_, buffer(&address_type, sizeof(address_type)), yield);
-		local_remote_cipher_->cipher1(&address_type, 1);
 		if (address_type == socks::addr_ipv4)
 		{
 			uint32_t ipv4;
@@ -140,8 +122,6 @@ void server_session::do_async_handshake(
 				buffer(&port,sizeof(port))
 			};
 			async_read(local_, sequence, transfer_all(), yield);
-			local_remote_cipher_->cipher1((uint8_t*)& ipv4, sizeof(ipv4));
-			local_remote_cipher_->cipher1((uint8_t*)& port, sizeof(port));
 			result.first = ip::make_address_v4(big_to_native(ipv4)).to_string();
 			result.second = std::to_string(big_to_native(port));
 		}
@@ -155,8 +135,6 @@ void server_session::do_async_handshake(
 				buffer(&port,sizeof(port))
 			};
 			async_read(local_, sequence, transfer_all(), yield);
-			local_remote_cipher_->cipher1(ipv6.data(), ipv6.size());
-			local_remote_cipher_->cipher1((uint8_t*)& port, sizeof(port));
 			std::reverse(ipv6.begin(), ipv6.end());
 			result.first = ip::make_address_v6(ipv6).to_string();
 			result.second = std::to_string(big_to_native(port));
@@ -168,13 +146,10 @@ void server_session::do_async_handshake(
 			uint16_t port;
 
 			async_read(local_, buffer(&domain_length, sizeof(domain_length)), yield);
-			local_remote_cipher_->cipher1(&domain_length, sizeof(domain_length));
 
 			async_read(local_, dynamic_buffer(domain), transfer_exactly(domain_length), yield);
-			local_remote_cipher_->cipher1((uint8_t*)domain.data(), domain.size());
 
 			async_read(local_, buffer(&port, sizeof(port)), yield);
-			local_remote_cipher_->cipher1((uint8_t*)& port, sizeof(port));
 
 			result.first = domain;
 			result.second = std::to_string(big_to_native(port));
@@ -222,7 +197,7 @@ server_session::notify_reuse(const io_context& ioc, ip::tcp::socket local, const
 {
 	(void)ioc;
 	(void)attribute;
-	local_ = std::move(local);
+    local_ = shadowsocks::stream<ip::tcp::socket>{std::move(local), shadowsocks::cipher_context{attribute.method, attribute.key, attribute.iv_length}};
 	remote_ = ip::tcp::socket(ioc_);
 }
 

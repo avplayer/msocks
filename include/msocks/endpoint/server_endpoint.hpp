@@ -20,6 +20,7 @@ struct server_endpoint_config
 	std::vector<uint8_t> key;
 	bool no_delay = true;
 	std::string method;
+    size_t iv_length;
 	boost::posix_time::seconds timeout;
 };
 

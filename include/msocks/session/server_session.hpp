@@ -17,6 +17,7 @@ struct server_session_attribute
 	server_session_attribute() : timeout(0) {};
 	std::vector<uint8_t> key;
 	std::string method;
+    size_t iv_length;
 	boost::posix_time::seconds timeout;
 	std::size_t limit = 0;
 	std::shared_ptr<utility::rate_limiter> limiter;
@@ -30,7 +31,10 @@ class server_session final :
 public:
 
 	server_session(io_context& ioc, ip::tcp::socket local, const server_session_attribute& attribute) :
-		basic_session(ioc, std::move(local)), attribute_(attribute)
+		basic_session(ioc)
+        , local_(std::move(local), shadowsocks::cipher_context{attribute.method, attribute.key, attribute.iv_length})
+        , remote_(ioc)
+        , attribute_(attribute)
 	{}
 
 	void go();
@@ -49,6 +53,10 @@ private:
 
 	void do_async_handshake(async_result<yield_context, void(error_code, std::pair<std::string, std::string>)>::completion_handler_type handler, yield_context yield);
 
+    shadowsocks::stream<ip::tcp::socket> local_;
+    
+    ip::tcp::socket remote_;
+    
 	const server_session_attribute& attribute_;
 };
 

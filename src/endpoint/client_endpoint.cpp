@@ -17,6 +17,7 @@ void client_endpoint::start()
 	attribute.timeout = cfg_.timeout;
 	attribute.remote_address = cfg_.remote_address;
 	attribute.remote_port = cfg_.remote_port;
+    attribute.iv_length = cfg_.iv_length;
 	
 	start_service(
 		[this](ip::tcp::socket socket) -> std::shared_ptr<client_session>
