@@ -18,6 +18,7 @@ struct client_session_attribute
 	uint16_t remote_port = 0;
 	std::vector<uint8_t> key;
 	std::string method;
+    size_t iv_length;
 	boost::posix_time::seconds timeout;
 };
 
@@ -27,7 +28,7 @@ public:
 	client_session(io_context& ioc, ip::tcp::socket && local, const client_session_attribute& attribute) 
         : basic_session(ioc)
         , local_(std::move(local))
-        , remote_(ip::tcp::socket{ioc}, shadowsocks::context{attribute.method, attribute.key})
+        , remote_(ip::tcp::socket{ioc}, shadowsocks::cipher_context{attribute.method, attribute.key, attribute.iv_length})
         , attribute_(attribute)
 	{}
 

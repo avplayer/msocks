@@ -17,6 +17,7 @@ struct server_session_attribute
 	server_session_attribute() : timeout(0) {};
 	std::vector<uint8_t> key;
 	std::string method;
+    size_t iv_length;
 	boost::posix_time::seconds timeout;
 	std::size_t limit = 0;
 	std::shared_ptr<utility::rate_limiter> limiter;
@@ -31,7 +32,7 @@ public:
 
 	server_session(io_context& ioc, ip::tcp::socket local, const server_session_attribute& attribute) :
 		basic_session(ioc)
-        , local_(std::move(local), shadowsocks::context{attribute.method, attribute.key})
+        , local_(std::move(local), shadowsocks::cipher_context{attribute.method, attribute.key, attribute.iv_length})
         , remote_(ioc)
         , attribute_(attribute)
 	{}

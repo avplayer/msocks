@@ -51,6 +51,7 @@ void client_session::fwd_remote_local(yield_context yield)
 			remote_, local_,
 			ioc_,
 			buffer(buffer_remote_),
+            [](std::size_t, yield_context) { return; },
 			yield[ec]);
 
 	}
@@ -68,6 +69,7 @@ void client_session::fwd_local_remote(yield_context yield)
 			local_, remote_,
 			ioc_,
 			buffer(buffer_local_),
+            [](std::size_t, yield_context) { return; },
 			yield[ec]);
 
 	}

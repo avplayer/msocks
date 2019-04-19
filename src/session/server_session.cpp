@@ -70,6 +70,10 @@ void server_session::fwd_local_remote(yield_context yield)
 			local_, remote_,
 			ioc_,
 			buffer(buffer_local_),
+            [this](std::size_t n, yield_context yield)
+            {
+                attribute_.limiter->async_get(n, yield);
+            },
 			yield[ec]);
 	}
 	catch (system_error & ignored)
@@ -87,6 +91,10 @@ void server_session::fwd_remote_local(yield_context yield)
 			remote_, local_,
 			ioc_,
 			buffer(buffer_remote_),
+            [this](std::size_t n, yield_context yield)
+            {
+                attribute_.limiter->async_get(n, yield);
+            },
             yield[ec]);
 	}
 	catch (system_error & ignored)
@@ -189,7 +197,7 @@ server_session::notify_reuse(const io_context& ioc, ip::tcp::socket local, const
 {
 	(void)ioc;
 	(void)attribute;
-    local_ = shadowsocks::stream<ip::tcp::socket>{std::move(local), shadowsocks::context{attribute.method, attribute.key}};
+    local_ = shadowsocks::stream<ip::tcp::socket>{std::move(local), shadowsocks::cipher_context{attribute.method, attribute.key, attribute.iv_length}};
 	remote_ = ip::tcp::socket(ioc_);
 }
 

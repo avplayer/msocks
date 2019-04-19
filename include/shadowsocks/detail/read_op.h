@@ -2,7 +2,7 @@
 
 #include <boost/asio.hpp>
 
-#include <shadowsocks/context.h>
+#include <shadowsocks/cipher_context.h>
 
 namespace shadowsocks
 {
@@ -14,7 +14,7 @@ template <typename Stream, typename MutableBufferSequence, typename Handler>
 class read_op
 {
 public:
-    read_op(Stream & next_layer, context & ctx, const MutableBufferSequence & buffers, Handler & h)
+    read_op(Stream & next_layer, cipher_context & ctx, const MutableBufferSequence & buffers, Handler & h)
         : next_layer_(next_layer)
         , context_(ctx)
         , buffers_(buffers)
@@ -73,7 +73,7 @@ public:
 private:
     Stream & next_layer_;
 
-    context & context_;
+    cipher_context & context_;
 
     MutableBufferSequence buffers_;
 
@@ -81,7 +81,7 @@ private:
 };
 
 template <typename Stream, typename MutableBufferSequence, typename Handler>
-inline void async_read(Stream& next_layer, context & ctx, const MutableBufferSequence & buffers, Handler& handler)
+inline void async_read(Stream& next_layer, cipher_context & ctx, const MutableBufferSequence & buffers, Handler& handler)
 {
     read_op<Stream, MutableBufferSequence, Handler>{next_layer, ctx, buffers, handler}(boost::system::error_code{}, 0, 1);
 }

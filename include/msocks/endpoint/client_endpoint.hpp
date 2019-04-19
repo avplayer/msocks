@@ -19,6 +19,7 @@ struct client_config
 	uint16_t remote_port = 0;
 	std::vector<uint8_t> key;
 	std::string method;
+    size_t iv_length;
 	boost::posix_time::seconds timeout;
 };
 

@@ -8,8 +8,8 @@ Current Build Directory Index-主机系统=0
 [CMake][CMake Build Directory 0]
 Build Directory Path=/home/zwk/github/msocks/build
 Build Type=Debug
-CMake Binary=/bin/cmake
-CMake Executable=/bin/cmake
+CMake Binary=/usr/bin/cmake
+CMake Executable=/usr/bin/cmake
 Environment Profile=
 Extra Arguments=
 Install Directory=/usr/local

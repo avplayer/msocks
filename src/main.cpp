@@ -60,6 +60,7 @@ int main(int argc, char* argv[])
 			config.key = key;
 			config.speed_limit = std::stoi(argv[5]);
 			config.method = "ChaCha(20)";
+            config.iv_length = 8;
 			config.timeout = boost::posix_time::seconds(2);
 			msocks::server_endpoint server(ioc, pool, std::move(config));
 			server.start();
@@ -74,6 +75,7 @@ int main(int argc, char* argv[])
 			config.remote_address = argv[2];
 			config.remote_port = std::stoi(argv[3]);
 			config.method = "ChaCha(20)";
+            config.iv_length = 8;
 			config.timeout = boost::posix_time::seconds(2);
 			msocks::client_endpoint client(ioc, std::move(config));
 			client.start();

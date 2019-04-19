@@ -18,6 +18,7 @@ socket_pair(
 	SinkStream & sink,
 	io_context& ioc,
 	mutable_buffer m_buf,
+    std::function<void(std::size_t, yield_context)> before_read,
 	CompletionToken&& token
 )
 {
@@ -32,6 +33,7 @@ socket_pair(
 			&sink,
 			&ioc,
 			m_buf,
+            before_read(std::move(before_read)),
 			handler
 		](yield_context yield) mutable
 	{
@@ -44,6 +46,7 @@ socket_pair(
 				break;
 			}
 			
+			before_read(n_read, yield);
 			async_write(sink, buffer(m_buf, n_read), yield[ec]);
             
 			if (ec)
