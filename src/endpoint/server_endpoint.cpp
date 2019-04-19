@@ -21,10 +21,9 @@ void server_endpoint::start()
 	static server_session_attribute attribute;
 	attribute.timeout = cfg_.timeout;
 	attribute.method = cfg_.method;
-	attribute.key = cfg_.key;
+	attribute.password = cfg_.password;
 	attribute.limit = cfg_.speed_limit;
 	attribute.limiter = limiter_;
-    attribute.iv_length = cfg_.iv_length;
 	start_service(
 		[this](ip::tcp::socket socket) -> std::shared_ptr<server_session>
 		{

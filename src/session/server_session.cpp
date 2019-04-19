@@ -196,8 +196,7 @@ void
 server_session::notify_reuse(const io_context& ioc, ip::tcp::socket local, const server_session_attribute& attribute)
 {
 	(void)ioc;
-	(void)attribute;
-    local_ = shadowsocks::stream<ip::tcp::socket>{std::move(local), shadowsocks::cipher_context{attribute.method, attribute.key, attribute.iv_length}};
+    local_ = shadowsocks::stream<ip::tcp::socket>{std::move(local), shadowsocks::cipher_context(shadowsocks::cipher_info(attribute.method,attribute.password))};
 	remote_ = ip::tcp::socket(ioc_);
 }
 

@@ -4,6 +4,7 @@
 
 #pragma once
 #include <msocks/endpoint/basic_endpoint.hpp>
+#include <shadowsocks/cipher_info.hpp>
 
 namespace msocks
 {
@@ -17,9 +18,8 @@ struct client_config
 	uint16_t local_port = 0;
 	std::string remote_address;
 	uint16_t remote_port = 0;
-	std::vector<uint8_t> key;
 	std::string method;
-    size_t iv_length;
+	std::string password;
 	boost::posix_time::seconds timeout;
 };
 

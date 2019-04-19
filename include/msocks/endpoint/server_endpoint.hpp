@@ -8,6 +8,8 @@
 #include <msocks/session/server_session.hpp>
 #include <msocks/utility/rate_limiter.hpp>
 
+#include <shadowsocks/cipher_info.hpp>
+
 namespace msocks
 {
 
@@ -17,10 +19,9 @@ struct server_endpoint_config
 	std::string server_address;
 	uint16_t server_port = 0;
 	size_t speed_limit = 0;
-	std::vector<uint8_t> key;
 	bool no_delay = true;
 	std::string method;
-    size_t iv_length;
+	std::string password;
 	boost::posix_time::seconds timeout;
 };
 

@@ -3,8 +3,9 @@ cmake_minimum_required(VERSION 3.9.2)
 project(msocks)
 
 set(Boost_USE_STATIC_LIBS ON)
-set(Boost_USE_STATIC_RUNTIME ON)
-
+if(MSVC)
+	set(Boost_USE_STATIC_RUNTIME ON)
+endif()
 set(Boost_ARCHITECTURE -x64)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake ${CMAKE_MODULE_PATH})
@@ -68,10 +69,7 @@ endif ()
  target_link_libraries(msocks Boost::coroutine Boost::system Boost::random Boost::thread)
 
 if (WIN32)
-    target_link_libraries(msocks ws2_32 wsock32)
-    if (MSVC)
-        target_link_libraries(msocks bcrypt)
-    endif ()
+    target_link_libraries(msocks ws2_32 wsock32 bcrypt)
 endif ()
 
 
